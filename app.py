@@ -25,8 +25,6 @@ emotion_labels = ["angry", "disgust", "fear", "happy", "sad", "surprise", "neutr
 face_cascade = cv2.CascadeClassifier(
     cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
 )
-@@ -23,39 +28,43 @@
-
 st.title("🎥 Live Emotion Recognition (Webcam Only)")
 
 # ——— 3) Transformer for per-frame processing ———————————————————————
