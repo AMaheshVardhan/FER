@@ -3,3 +3,4 @@ streamlit-webrtc
 tensorflow
 opencv-python-headless
 pillow
+deepface
