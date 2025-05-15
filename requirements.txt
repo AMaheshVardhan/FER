@@ -1,7 +1,8 @@
 streamlit
 opencv-python-headless
-tensorflow
-deepface
+tensorflow==2.11.0
+keras==2.11.0
+deepface==0.0.79
 streamlit-webrtc
 numpy
 matplotlib
