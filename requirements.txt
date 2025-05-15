@@ -5,3 +5,4 @@ streamlit-webrtc
 numpy
 matplotlib
 scikit-learn
+protobuf==3.20.*
