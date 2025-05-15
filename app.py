@@ -1,4 +1,6 @@
 import streamlit as st
+from tensorflow.keras.models import load_model
+import numpy as np
 from streamlit_webrtc import (
     webrtc_streamer,
     VideoTransformerBase,
@@ -6,10 +8,9 @@ from streamlit_webrtc import (
     WebRtcMode
 )
 import cv2
+from PIL import Image
 import numpy as np
 from tensorflow.keras.models import load_model
-from deepface import DeepFace
-import tempfile
 
 # ——— 1) Load model & labels —————————————————————————————————————
 @st.cache_resource
@@ -17,6 +18,34 @@ def load_emotion_model():
     return load_model("fer_expression_model.h5")
 
 model = load_emotion_model()
+emotion_labels = ["angry","disgust","fear","happy","sad","surprise","neutral"]
+
+st.title("📸 Webcam Snapshot Emotion Predictor")
+
+st.write("Click below to take a single webcam photo and predict the facial expression.")
+
+# ——— 2) Camera input —————————————————————————————————————————
+img_file = st.camera_input("Take a photo")
+
+if img_file:
+    # 3) Display original
+    st.image(img_file, caption="📷 Your snapshot", use_column_width=False)
+    
+    # 4) Preprocess for model
+    img = Image.open(img_file).convert("L")            # grayscale
+    img = np.array(img)
+    img = cv2.resize(img, (48,48))                     # resize to 48×48
+    x   = img.astype("float32") / 255.0                # normalize
+    x   = np.expand_dims(x, axis=(0,-1))               # shape (1,48,48,1)
+
+    # 5) Predict
+    preds = model.predict(x, verbose=0)[0]
+    idx   = int(np.argmax(preds))
+    label, conf = emotion_labels[idx], preds[idx]
+
+    # 6) Show result
+    st.markdown(f"## Prediction: **{label.upper()}**")
+    st.markdown(f"Confidence: **{conf:.1%}**")
 emotion_labels = ["angry", "disgust", "fear", "happy", "sad", "surprise", "neutral"]
 
 # ——— 2) Face detector setup —————————————————————————————————————
@@ -28,41 +57,16 @@ RTC_CONFIG = RTCConfiguration({
     "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
 })
 
-st.title("🎥 Live Emotion Recognition with Anti-Spoofing (Webcam Only)")
+st.title("🎥 Live Emotion Recognition (Webcam Only)")
 
-# ——— 3) Transformer with spoofing filter —————————————————————————
+# ——— 3) Transformer for per-frame processing ———————————————————————
 class EmotionTransformer(VideoTransformerBase):
-    def is_real_face(self, face_bgr):
-        # Save frame temporarily
-        with tempfile.NamedTemporaryFile(suffix=".jpg", delete=True) as tmp:
-            cv2.imwrite(tmp.name, face_bgr)
-            try:
-                result = DeepFace.analyze(
-                    img_path=tmp.name,
-                    actions=["spoof"],
-                    enforce_detection=False,
-                    prog_bar=False
-                )
-                return result["spoof"]["attack"] < 0.5
-            except:
-                return False
-
     def transform(self, frame):
         img = frame.to_ndarray(format="bgr24")
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
 
         for (x, y, w, h) in faces:
-            face_bgr = img[y:y+h, x:x+w]
-
-            if not self.is_real_face(face_bgr):
-                cv2.rectangle(img, (x, y), (x+w, y+h), (0, 0, 255), 2)
-                cv2.putText(
-                    img, "Spoof Detected!", (x, y - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2
-                )
-                continue
-
             roi = gray[y:y+h, x:x+w]
             roi = cv2.resize(roi, (48, 48))
             roi = roi.astype("float32") / 255.0
