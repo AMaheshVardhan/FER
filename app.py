@@ -36,32 +36,32 @@ class EmotionTransformer(VideoTransformerBase):
         faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
 
         for (x,y,w,h) in faces:
-        for (x, y, w, h) in faces:
-            roi = gray[y:y+h, x:x+w]
-            roi = cv2.resize(roi, (48,48))
-            roi = cv2.resize(roi, (48, 48))
-            roi = roi.astype("float32") / 255.0
-            roi = np.expand_dims(roi, axis=(0,-1))
-            roi = np.expand_dims(roi, axis=(0, -1))  # shape (1,48,48,1)
-
-            preds = model.predict(roi, verbose=0)[0]
-            idx = np.argmax(preds)
-            label, conf = emotion_labels[idx], preds[idx]
-
-            cv2.rectangle(img, (x,y),(x+w,y+h),(0,255,0),2)
-            # Draw bounding box and label
-            cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)
-            cv2.putText(
-                img,
-                f"{label} ({conf:.0%})",
-                (x, y-10),
-                (x, y - 10),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.7,
-                (0,255,0),
-                (0, 255, 0),
-                2
-            )
+            for (x, y, w, h) in faces:
+                roi = gray[y:y+h, x:x+w]
+                roi = cv2.resize(roi, (48,48))
+                roi = cv2.resize(roi, (48, 48))
+                roi = roi.astype("float32") / 255.0
+                roi = np.expand_dims(roi, axis=(0,-1))
+                roi = np.expand_dims(roi, axis=(0, -1))  # shape (1,48,48,1)
+    
+                preds = model.predict(roi, verbose=0)[0]
+                idx = np.argmax(preds)
+                label, conf = emotion_labels[idx], preds[idx]
+    
+                cv2.rectangle(img, (x,y),(x+w,y+h),(0,255,0),2)
+                # Draw bounding box and label
+                cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)
+                cv2.putText(
+                    img,
+                    f"{label} ({conf:.0%})",
+                    (x, y-10),
+                    (x, y - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.7,
+                    (0,255,0),
+                    (0, 255, 0),
+                    2
+                )
 
         return img
 
