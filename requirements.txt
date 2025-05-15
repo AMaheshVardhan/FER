@@ -1,8 +1,6 @@
-tensorflow==2.11.0
-keras==2.11.0
-deepface==0.0.79
-opencv-python-headless
 streamlit
 streamlit-webrtc
-numpy
-protobuf==3.20.*
+opencv-python
+tensorflow
+opencv-python-headless
+pillow
