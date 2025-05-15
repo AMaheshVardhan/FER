@@ -1,6 +1,7 @@
-streamlit
-streamlit-webrtc
-tensorflow
 opencv-python-headless
-pillow
+tensorflow
 deepface
+streamlit-webrtc
+numpy
+matplotlib
+scikit-learn
